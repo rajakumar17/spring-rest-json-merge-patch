@@ -9,6 +9,7 @@ There are two RFCs on the JSON patch to support
 Spring REST is yet to inherently support these RFCs. Spring Data REST supports both these RFCs.
 
 Following steps will add patch support in the REST controller
+
 1. Consume application/merge-patch+json media type 
 2. Retrieve the request body as Json String 
 3. Parse the input Json String to JsonNode
