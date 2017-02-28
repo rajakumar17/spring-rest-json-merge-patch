@@ -16,9 +16,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static com.thirur.mergepatch.controller.TestUtils.STANDARD_HEADERS;
 import static com.thirur.mergepatch.controller.TestUtils.getObjectFromResult;
@@ -36,26 +33,21 @@ public class CustomerControllerTest {
 
     private MockMvc mockMvc;
 
-    private String payload;
-
     @Autowired
     private WebApplicationContext context;
 
     @Before
     public void setUp() throws IOException {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
-        String path = "C:\\temp\\spring-rest-json-merge-patch\\src\\test\\resources\\testdata.json";
-        payload = readFromFile(path);
-    }
-
-    private String readFromFile(String path) throws IOException {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, StandardCharsets.UTF_8);
     }
 
     @Test
     public void customerTest() throws Exception {
-        MvcResult result = mockMvc.perform(post("/customers").headers(STANDARD_HEADERS).content(payload)).
+        Customer customer = new Customer();
+        customer.setFirstName("Rajakumar");
+        customer.setLastName("Thiruvasagam");
+        customer.setEmail("thirur@emc.com");
+        MvcResult result = mockMvc.perform(post("/customers").headers(STANDARD_HEADERS).content(toJson(customer))).
                 andExpect(status().isCreated()).andReturn();
         Customer custMT = getObjectFromResult(result, Customer.class);
         System.out.println("Customer created :" + custMT.toString());
@@ -74,7 +66,7 @@ public class CustomerControllerTest {
         Assert.assertEquals("Customer updated incorrectly", custMT.getEmail(), "rthiruva@opentext.com");
 
         //patch
-        String data = readFromFile("C:\\temp\\spring-rest-json-merge-patch\\src\\test\\resources\\patchtestdata.json");
+        String data = "{\"lastName\": null, \"email\": \"thirur@dell.com\"}";
         result = mockMvc.perform(patch("/customers/1").header(HttpHeaders.ACCEPT, MediaTypes.HAL_JSON.toString())
                 .header(HttpHeaders.CONTENT_TYPE, "application/merge-patch+json").content(data))
                 .andExpect(status().isOk()).andReturn();
